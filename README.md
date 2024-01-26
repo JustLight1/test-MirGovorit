@@ -79,17 +79,17 @@ python -m pip install --upgrade pip
 ```
 pip install -r requirements.txt
 ```
-- Выполните миграции БД. Из папки backend с файлом manage.py выполните команду:
+- Выполните миграции БД. Из папки recipes_project с файлом manage.py выполните команду:
 ```
 python manage.py makemigrations
 python manage.py migrate
 ```
-- Для создания суперюзера из папки backend с файлом manage.py выполните команду:
+- Для создания суперюзера из папки recipes_project с файлом manage.py выполните команду:
 ```
 python manage.py createsuperuser
 ```
 
-- Для запуска сервера из папки backend с файлом manage.py выполните команду:
+- Для запуска сервера из папки recipes_project с файлом manage.py выполните команду:
 
 ```
 python manage.py runserver
