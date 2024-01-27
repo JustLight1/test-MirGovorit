@@ -1,5 +1,6 @@
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import JsonResponse
+from django.db import transaction
 from django.shortcuts import get_object_or_404, render
 
 from .models import Product, Recipe, RecipeProduct
@@ -26,13 +27,17 @@ def add_product_to_recipe(request, recipe_id, product_id, weight):
 def cook_recipe(request, recipe_id):
     try:
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        recipe_products = RecipeProduct.objects.filter(recipe=recipe)
 
-        for rp in recipe_products:
-            rp.product.preparation_count += 1
-            rp.product.save()
+        with transaction.atomic():
+            product_ids = RecipeProduct.objects.filter(
+                recipe=recipe
+                ).values_list('product_id', flat=True)
 
-        return JsonResponse({'status': 'success'})
+            Product.objects.filter(id__in=product_ids).update(
+                preparation_count=F('preparation_count') + 1
+            )
+
+            return JsonResponse({'status': 'success'})
 
     except Recipe.DoesNotExist as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
@@ -47,7 +52,7 @@ def show_recipes_without_product(request, product_id):
     )
 
     recipes_without_product = Recipe.objects.exclude(
-        Q(recipeproduct__product=product) & Q(recipeproduct__weight__gt=10)
+        Q(recipeproduct__product=product) & Q(recipeproduct__weight__gte=10)
     )
 
     recipes = recipes_without_product.union(recipes_with_low_weight)
